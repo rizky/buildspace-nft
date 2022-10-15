@@ -13,7 +13,7 @@ const TOTAL_MINT_COUNT = 50;
 const App = () => {
   const [currentAccount, setCurrentAccount] = useState("");
   const askContractToMintNft = async () => {
-    const CONTRACT_ADDRESS = "0xF27488Ca9D6119C50051957417E3ffe47f16eE2b";
+    const CONTRACT_ADDRESS = "0x21374f36ed9cb003aEC60F92540f41b59E7aE345";
   
     try {
       const { ethereum } = window;
@@ -23,6 +23,11 @@ const App = () => {
         const signer = provider.getSigner();
         const connectedContract = new ethers.Contract(CONTRACT_ADDRESS, myEpicNft.abi, signer);
   
+        connectedContract.on("NewEpicNFTMinted", (from, tokenId) => {
+          console.log(from, tokenId.toNumber())
+          alert(`Hey there! We've minted your NFT. It may be blank right now. It can take a max of 10 min to show up on OpenSea. Here's the link: <https://testnets.opensea.io/assets/goerli/${CONTRACT_ADDRESS}/${tokenId.toNumber()}>`)
+        });
+
         console.log("Going to pop wallet now to pay gas...")
         let nftTxn = await connectedContract.makeAnEpicNFT();
   
@@ -41,6 +46,15 @@ const App = () => {
 
   const checkIfWalletIsConnected = async () => {
     const { ethereum } = window;
+
+    let chainId = await ethereum.request({ method: 'eth_chainId' });
+    console.log("Connected to chain " + chainId);
+
+    // String, hex code of the chainId of the Rinkebey test network
+    const goerliChainId = "0x5"; 
+    if (chainId !== goerliChainId) {
+      alert("You are not connected to the Goerli Test Network!");
+    }
 
     if (!ethereum) {
       console.log("Make sure you have metamask!");
